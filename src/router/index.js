@@ -27,39 +27,45 @@ export const constantRouterMap = [
   { path: '/404', component: () => import('@/views/404'), hidden: true },
 
   {
-    path: '/',
+    path: '',
     component: Layout,
     redirect: '/dashboard',
-    name: 'Dashboard',
-    hidden: true,
-    children: [{
-      path: 'dashboard',
-      component: () => import('@/views/dashboard/index')
-    }]
+    children: [
+      {
+        path: 'dashboard',
+        component: () => import('@/views/dashboard/index'),
+        name: 'Dashboard',
+        meta: { title: 'Dashboard', icon: 'dashboard', noCache: true }
+      }
+    ]
   },
-
   {
     path: '/example',
     component: Layout,
-    redirect: '/example/table',
+    redirect: '/example',
     name: 'Example',
-    meta: { title: 'Example', icon: 'example' },
+    meta: { title: 'Consign', icon: 'example' },
     children: [
       {
-        path: 'table',
-        name: 'Table',
-        component: () => import('@/views/table/index'),
-        meta: { title: 'Table', icon: 'table' }
+        path: 'consign-order/paging',
+        name: 'OrderTable',
+        component: () => import('@/views/ConsignOrder/paging/ConsignOrderPagingTable'),
+        meta: { title: 'OrderPaging', icon: 'table' }
+      },
+      {
+        path: 'consign-pgk/paging',
+        name: 'PackageTable',
+        component: () => import('@/views/ConsignOrder/pkgPaging/ConsignPackagePagingTable'),
+        meta: { title: 'PackagePaging', icon: 'table' }
       },
       {
         path: 'tree',
         name: 'Tree',
         component: () => import('@/views/tree/index'),
-        meta: { title: 'Tree', icon: 'tree' }
+        meta: { title: 'TreePaging', icon: 'tree' }
       }
     ]
   },
-
   {
     path: '/form',
     component: Layout,
@@ -72,7 +78,6 @@ export const constantRouterMap = [
       }
     ]
   },
-
   {
     path: '/nested',
     component: Layout,
@@ -130,13 +135,12 @@ export const constantRouterMap = [
       }
     ]
   },
-
   {
     path: 'external-link',
     component: Layout,
     children: [
       {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+        path: 'http://h5test.gegejia.com/adminShop3/#/orderShipment',
         meta: { title: 'External Link', icon: 'link' }
       }
     ]

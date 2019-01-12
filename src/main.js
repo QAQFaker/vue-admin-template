@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import moment from 'moment'
 
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
@@ -18,6 +19,12 @@ import '@/permission' // permission control
 Vue.use(ElementUI, { locale })
 
 Vue.config.productionTip = false
+
+Vue.filter('formatDate', function(value) {
+  if (value) {
+    return moment(String(value)).format('YYYY-MM-DD HH:mm:ss')
+  }
+})
 
 new Vue({
   el: '#app',
