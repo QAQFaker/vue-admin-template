@@ -1,15 +1,15 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-form ref="consignOrderPagingForm" v-model="consignOrderPagingForm" :inline="true" class="demo-form-inline">
-        <el-form-item :rules="rules.shopOrderId" prop="shopOrderId" label="shopOrderId: ">
-          <el-input v-model.number="consignOrderPagingForm.shopOrderId" type="number" placeholder="shopOrderId" style="width: 200px;" class="filter-item"/>
+      <el-form ref="consignOrderPagingForm" :rules="rules" :model="consignOrderPagingForm" :inline="true" class="demo-form-inline">
+        <el-form-item prop="shopOrderId" label="shopOrderId: ">
+          <el-input v-model.number="consignOrderPagingForm.shopOrderId" type="text" placeholder="shopOrderId" style="width: 200px;" class="filter-item"/>
         </el-form-item>
         <el-form-item label="consignCode: ">
           <el-input v-model="consignOrderPagingForm.consignCode" placeholder="consignCode" style="width: 200px;" class="filter-item"/>
         </el-form-item>
         <el-form-item :rules="rules.shopDeliverId" prop="shopDeliverId" label="shopDeliverId: ">
-          <el-input v-model.number="consignOrderPagingForm.shopDeliverId" type="number" placeholder="shopDeliverId" style="width: 130px;" class="filter-item"/>
+          <el-input v-model.number="consignOrderPagingForm.shopDeliverId" type="text" placeholder="shopDeliverId" style="width: 130px;" class="filter-item"/>
         </el-form-item>
         <el-form-item label="status: ">
           <el-select v-model="consignOrderPagingForm.status" clearable style="width: 110px" class="filter-item">
@@ -182,7 +182,7 @@ export default {
         reset: 'Reset'
       },
       rules: {
-        shopOrderId: [{ required: false }, { type: 'number', message: '订单编号必须为数字', trigger: 'blur' }],
+        shopOrderId: [{ required: true, message: '信息不能为空' }, { type: 'number', message: '订单编号必须为数字' }],
         shopDeliverId: [{ required: false }, { type: 'number', message: '发货地必须为数字', trigger: 'blur' }]
       }
     }
