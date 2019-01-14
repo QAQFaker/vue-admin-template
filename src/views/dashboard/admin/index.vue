@@ -11,6 +11,9 @@ export default {
   name: 'DashboardAdmin',
   components: {
     PanelGroup
+  },
+  methods: {
+    handleSetLineChartData() {}
   }
 }
 </script>

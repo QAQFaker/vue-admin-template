@@ -3,21 +3,34 @@
     <div class="filter-container">
       <el-form ref="consignOrderPagingForm" :rules="rules" :model="consignOrderPagingForm" :inline="true" class="demo-form-inline">
         <el-form-item prop="shopOrderId" label="shopOrderId: ">
-          <el-input v-model.number="consignOrderPagingForm.shopOrderId" type="text" placeholder="shopOrderId" style="width: 200px;" class="filter-item"/>
+          <el-input v-model="consignOrderPagingForm.shopOrderId" type="text" placeholder="shopOrderId" style="width: 200px;" class="filter-item"/>
         </el-form-item>
-        <el-form-item label="consignCode: ">
+        <el-form-item prop="consignCode" label="consignCode: ">
           <el-input v-model="consignOrderPagingForm.consignCode" placeholder="consignCode" style="width: 200px;" class="filter-item"/>
         </el-form-item>
         <el-form-item :rules="rules.shopDeliverId" prop="shopDeliverId" label="shopDeliverId: ">
-          <el-input v-model.number="consignOrderPagingForm.shopDeliverId" type="text" placeholder="shopDeliverId" style="width: 130px;" class="filter-item"/>
+          <el-input v-model="consignOrderPagingForm.shopDeliverId" type="text" placeholder="shopDeliverId" style="width: 130px;" class="filter-item"/>
         </el-form-item>
-        <el-form-item label="status: ">
+        <el-form-item prop="status" label="status: ">
           <el-select v-model="consignOrderPagingForm.status" clearable style="width: 110px" class="filter-item">
             <el-option v-for="item in consignOrderStatusOptions" :key="item.code" :label="item.desc" :value="item.code"/>
           </el-select>
         </el-form-item>
+        <el-form-item prop="pickValue" label="payTime: ">
+          <div class="block">
+            <el-date-picker
+              :picker-options="pickerOptions"
+              v-model="consignOrderPagingForm.pickValue"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="datetimerange"
+              range-separator="to"
+              start-placeholder="StartTime"
+              end-placeholder="EndTime"
+              align="right"/>
+          </div>
+        </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit('consignOrderPagingForm')">{{ textMap.search }}</el-button>
+          <el-button v-waves icon="el-icon-search" type="primary" @click="onSubmit()">{{ textMap.search }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-button @click="resetForm()">{{ textMap.reset }}</el-button>
@@ -113,15 +126,47 @@
           {{ scope.row.updateTime | formatDate }}
         </template>
       </el-table-column>
-      <el-table-column align="center" fit fixed="right" label="操作" min-width="120px">
+      <el-table-column align="center" fit fixed="right" label="Actions" min-width="150px">
         <template slot-scope="scope">
-          <el-button type="text" size="small" @click="handleClick(scope.row.consignCode)">{{ textMap.view }}</el-button>
-          <el-button type="text" size="small" @click="handleClick(scope.row.consignCode)">{{ textMap.edit }}</el-button>
+          <el-button type="primary" size="mini" @click="handleClick(scope.row.consignCode)">{{ textMap.view }}</el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">{{ textMap.edit }}</el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="consignOrderPagingForm.pageNo" :limit.sync="consignOrderPagingForm.pageSize" align="right" @pagination="getConsignOrderPagingData" />
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="consignOrderPagingForm.pageNo"
+      :limit.sync="consignOrderPagingForm.pageSize"
+      align="right"/>
+
+    <el-dialog :title="textMap.edit" :visible.sync="dialogFormVisible">
+      <el-form
+        ref="dialogForm"
+        :rules="rules"
+        :model="dialogForm"
+        :label-position="dialogForm.labelPosition"
+        label-width="150px"
+        style="margin-left:50px;">
+        <el-form-item label="shopOrderId: ">
+          <el-input v-model="dialogForm.shopOrderId" :value="dialogForm.shopOrderId" :disabled="true" type="text" style="width: 200px;" class="filter-item"/>
+        </el-form-item>
+        <el-form-item label="consignCode: ">
+          <el-input v-model="dialogForm.consignCode" :value="dialogForm.consignCode" :disabled="true" style="width: 200px;" class="filter-item"/>
+        </el-form-item>
+        <el-form-item label="shopDeliverId: ">
+          <el-input v-model="dialogForm.shopDeliverId" :value="dialogForm.shopDeliverId" type="text" style="width: 130px;" class="filter-item"/>
+        </el-form-item>
+        <el-form-item label="status: ">
+          <el-input v-model="dialogForm.status" :value="dialogForm.status" type="text" style="width: 130px;" class="filter-item"/>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">{{ 'Cancel' }}</el-button>
+        <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">{{ 'Submit' }}</el-button>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
@@ -166,6 +211,16 @@ export default {
         shopOrderId: undefined,
         consignCode: undefined,
         shopDeliverId: undefined,
+        payTimeStart: undefined,
+        payTimeEnd: undefined,
+        status: undefined,
+        pickValue: ''
+      },
+      dialogForm: {
+        labelPosition: 'right',
+        shopOrderId: undefined,
+        consignCode: undefined,
+        shopDeliverId: undefined,
         status: undefined
       },
       consignOrderStatusOptions: [
@@ -176,15 +231,46 @@ export default {
       ],
       calendarTypeOptions,
       textMap: {
+        operation: 'Operations',
         view: 'View',
         edit: 'Edit',
         search: 'Search',
         reset: 'Reset'
       },
       rules: {
-        shopOrderId: [{ required: true, message: '信息不能为空' }, { type: 'number', message: '订单编号必须为数字' }],
-        shopDeliverId: [{ required: false }, { type: 'number', message: '发货地必须为数字', trigger: 'blur' }]
-      }
+        shopOrderId: [{ required: false }, { pattern: /^\d*$/, message: '订单编号必须为数字' }],
+        shopDeliverId: [{ required: false }, { pattern: /^\d*$/, message: '发货地必须为数字' }]
+      },
+      pickerOptions: {
+        shortcuts: [{
+          text: '最近一周',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+            picker.$emit('pick', [start, end])
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date()
+            const start = new Date()
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+            picker.$emit('pick', [start, end])
+          }
+        }]
+      },
+      dialogFormVisible: false,
+      dialogStatus: '',
+      dialogPvVisible: false
     }
   },
   created() {
@@ -200,27 +286,32 @@ export default {
         // Just to simulate the time of the request
         setTimeout(() => {
           this.listLoading = false
-        }, 300)
+        }, 150)
       })
     },
     // 提交查询
     onSubmit() {
+      if (this.consignOrderPagingForm.pickValue != null
+        && this.consignOrderPagingForm.pickValue !== 0
+        && this.consignOrderPagingForm.pickValue !== '') {
+        this.consignOrderPagingForm.payTimeStart = this.consignOrderPagingForm.pickValue[0]
+        this.consignOrderPagingForm.payTimeEnd = this.consignOrderPagingForm.pickValue[1]
+      }
       this.getConsignOrderPagingData()
     },
     // 重置表单
     resetForm() {
-      this.restFormData()
+      this.$refs['consignOrderPagingForm'].resetFields()
+      this.$refs['consignOrderPagingForm'].clearValidate()
+      this.getConsignOrderPagingData()
     },
-    // 重置表单model数据
-    restFormData() {
-      this.consignOrderPagingForm = {
-        pageNo: 1,
-        pageSize: 20,
-        shopOrderId: undefined,
-        consignCode: undefined,
-        shopDeliverId: undefined,
-        status: undefined
-      }
+    handleUpdate(row) {
+      this.dialogForm = Object.assign({}, row) // copy obj
+      this.dialogStatus = 'update'
+      this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['consignOrderPagingForm'].clearValidate()
+      })
     },
     // json格式化, 只是为了处理时间戳
     formatJson(filterVal, jsonData) {

@@ -47,7 +47,7 @@
           {{ scope.row.sellerShopId }}
         </template>
       </el-table-column>
-      <el-table-column :show-overflow-tooltip="true" align="center" label="packageCode" width="80px">
+      <el-table-column :show-overflow-tooltip="true" align="center" label="packageCode" width="150px">
         <template slot-scope="scope">
           {{ scope.row.packageCode }}
         </template>
@@ -110,13 +110,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="consignPackagePagingForm.pageNo" :limit.sync="consignPackagePagingForm.pageSize" align="right" @pagination="getConsignOrderPagingData" />
+    <pagination v-show="total>0" :total="total" :page.sync="consignPackagePagingForm.pageNo" :limit.sync="consignPackagePagingForm.pageSize" align="right"/>
 
   </div>
 </template>
 
 <script>
-// import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
 import { consignPackagePaging } from '@/api/consign/ConsignPackageQueryApi'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
@@ -171,11 +170,11 @@ export default {
     }
   },
   created() {
-    this.getConsignOrderPagingData()
+    this.getConsignPackagePagingData()
   },
   methods: {
     // 查询履约单
-    getConsignOrderPagingData() {
+    getConsignPackagePagingData() {
       this.listLoading = true
       consignPackagePaging(this.consignPackagePagingForm).then(response => {
         this.total = response.data.count
@@ -188,11 +187,13 @@ export default {
     },
     // 提交查询
     onSubmit() {
-      this.getConsignOrderPagingData()
+      this.getConsignPackagePagingData()
     },
     // 重置表单
     resetForm() {
-      this.resetFormData()
+      this.$refs['consignPackagePagingForm'].resetFields()
+      this.$refs['consignPackagePagingForm'].clearValidate()
+      this.getConsignPackagePagingData()
     },
     handleModifyStatus(row, status) {
       this.$message({
@@ -200,14 +201,6 @@ export default {
         type: 'success'
       })
       row.status = status
-    },
-    resetFormData() {
-      this.consignPackagePagingForm = {
-        pageNo: 1,
-        pageSize: 20,
-        consignCode: undefined,
-        status: undefined
-      }
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
